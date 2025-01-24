@@ -1,0 +1,52 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Keycloak: Build and Restart",
+			"type": "shell",
+			"dependsOn": [
+				"Maven Build",
+				"Restart Keycloak container"
+			],
+			"dependsOrder": "sequence",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"label": "RHBK: Build and Restart",
+			"type": "shell",
+			"dependsOn": [
+				"Maven Build",
+				"Restart RHBK container"
+			],
+			"dependsOrder": "sequence",
+			"group": {
+				"kind": "build",
+				"isDefault": true
+			}
+		},
+		{
+			"label": "Maven Build",
+			"type": "shell",
+			"command": "mvn clean install",
+			"problemMatcher": [],
+			"group": "none"
+		},
+		{
+			"label": "Restart Keycloak container",
+			"type": "shell",
+			"command": "docker compose -f ./docker/keycloak/docker-compose.yaml restart keycloak",
+			"problemMatcher": [],
+			"group": "none"
+		},
+		{
+			"label": "Restart RHBK container",
+			"type": "shell",
+			"command": "docker compose -f ./docker/rhbk/docker-compose.yaml restart keycloak",
+			"problemMatcher": [],
+			"group": "none"
+		}
+	]
+}

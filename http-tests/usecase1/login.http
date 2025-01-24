@@ -1,0 +1,106 @@
+### STC Direct access login
+
+@client_id=direct-access
+@client_secret=AHmvRpQAuNHilHk4wbqCDg1w7BZ4GiNa
+@service_number=508920253
+@device_id=test_device_id
+@redirect_uri=http://localhost:3000/da/oauth/callback
+
+{{
+  const crypto=require('crypto');
+    function generateCodeVerifier() {
+  const randomBytes=crypto.randomBytes(32); // Generate 32 random bytes
+  const codeVerifier=randomBytes.toString('base64url'); // Base64 URL encoding
+  return codeVerifier;
+}
+
+// Function to generate the code challenge from the code verifier
+function generateCodeChallenge(codeVerifier) {
+  // Hash the code verifier using SHA-256
+  const sha256Hash=crypto.createHash('sha256');
+  sha256Hash.update(codeVerifier);
+  const hashBuffer=sha256Hash.digest();
+
+  // Encode the hash as Base64 URL
+  const base64urlChallenge=hashBuffer.toString('base64url');
+  return base64urlChallenge;
+}
+
+    codeVerifier=generateCodeVerifier()
+    codeChallenge=generateCodeChallenge(codeVerifier)
+
+    exports.CODE_VERIFIER=codeVerifier;
+    exports.CODE_CHALLENGE=codeChallenge;
+    exports.STATE=codeVerifier;
+}}
+
+# @name auth
+POST {{AUTH_SERVER}}/realms/{{REALM}}/protocol/openid-connect/auth
+Accept-Language: ar
+Content-Type: application/x-www-form-urlencoded
+User-Agent: huawei;Default;Default;Default
+msisdn: 508920253
+imsi: 420017300010680
+
+response_type=code&
+client_id={{client_id}}&
+client_secret={{client_secret}}&
+redirect_uri={{redirect_uri}}&
+code_challenge={{CODE_CHALLENGE}}&
+code_challenge_method=S256&
+state={{STATE}}&
+scope=openid&
+device_id={{device_id}}&
+wifi=Y
+
+{{
+    const { equal }=require('assert');
+  test('status code 200', () => {
+    equal(response.statusCode, 200);
+  });
+
+}}
+
+HTTP/1.1 200  - OK
+set-cookie: AUTH_SESSION_ID=b82c629c-ecd0-4fea-8269-57e1dc4a3bcc.290d6ef9b960-32368;Version=1;Path=/realms/stc-sso-dev/;Secure;HttpOnly;SameSite=None, AUTH_SESSION_ID_LEGACY=b82c629c-ecd0-4fea-8269-57e1dc4a3bcc.290d6ef9b960-32368;Version=1;Path=/realms/stc-sso-dev/;HttpOnly, KC_RESTART=eyJhbGciOiJkaXIiLCJlbmMiOiJBMTI4Q0JDLUhTMjU2In0..JZJcRzfQrmE8Wstk3HG7YA.M5Cdi245etkzioAugV2IX6i_CikAXUvN7exWjR0H3RPMZKuRLf8LTjcBH4pGLd621F5MKPg9IIOVhIljGI6hrESjOTA2WweqLrUr40Hu0EymvfkpjMt4qU6kNXQ-PMM9eNjJ0cGvmBG87CgXwbKSek39vObMGpWt7noNIM2AsJ1PbyPfeFNe4FDEHRNgwN027LKHhPEpZi_5QPS497xVyxJrWIFdPSTiIHYA9uCG2B0S5B2jT3gKz-Q7jNPiSc0R8cv2vAldkzmxvBcoCcZhfIOrWoJS1wj1X4ubjon71fUFbBES5FAsRIAbmWsdE0pNQ3JB4UkxlChOzfw-kaD0VayKUzrc3Js4bloYw5KU6zTxbK8I1fluilgGLKwgjweXzyWOJriNoIPxV9NtxwT8LDPZU_IvMN776G03lfiPI19hKnL2QrHlDJpB5Y61Iye9-dLKgNL6CtVBKZTI583JwStPrvQqYpC4XbeiFnAztYDS0m1ycmsdT_s6Kz2bJX-Xx0qGMSfHZTwcE44jMLEN1om9472Gsn2eLSY6RR_Jve_zVXJofqjnHFGQWAfVv5hEKheXiq4lEID6QPWNopf_5C9e-nm9AQ3EfYP35BgI1kY3XhvAfvrv5YdvBbPW0iWmIdnAWdf14bHzMlDoLdjKtOEolrV75bn6WWARrBk8vVu8ucBqHPuGvthAJJQVsGKJWzq_eHYiSffEq5z2leRamMZXbhix84yxStx4-uSAkqtU7wiTjwRsfsRYtfPDaz0TKce8s48hJYRKvjwA5lP-xX3zwcWyZKJGoU3FWKJl9RPFfZhNnwUsZXRXIWhE6Kni38rPiJQF_liQmEqzAzT6RhSn7ZUbosxgjjGI_mU-AoF1lJqcSPM8wA3gDqqsvpugwjltsJRrq5NM68NMIl9v-YUwx84ubHa-M-JexvLPkWcVT_rlG6q2Sm1k_HuIsy4AXSqgmH3Kfzj7KnDMak6p2s0qZ90aoMcZY-YhfeOOVmFv5H8WNDyXKuyEXKhsQs61iaqjhMvfRegn5PhQf9uDf7y1A3NfhPXmJM6drN7Q172BCt6CkFD0reOXbV_IWXSRcNRcecYyFGqNyyCzNat-sDMubPDTM5p5h8M1B69HpDAt7rcUSl84LeXURQBKE4E-._BPa6DC0QI9jVuEC1FHj_w;Version=1;Path=/realms/stc-sso-dev/;HttpOnly, KEYCLOAK_IDENTITY=eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI0MzE2Nzg4Ny00YzdkLTQ5ZWUtOWMyZC0yOGI5OTBhZDU3ZWEifQ.eyJleHAiOjE3MzQ2MjEwOTYsImlhdCI6MTczNDYxOTI5NiwianRpIjoiNGY2NWQ5YzEtODBiZC00OGM0LTk4YTktYWIyZDI5NGVmYzZjIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9zdGMtc3NvLWRldiIsInN1YiI6Ijk4MDI0MGJhLTQ2OGQtNGU1Yi04ZjFkLTgzMTk0NjYyMWEyMCIsInR5cCI6IlNlcmlhbGl6ZWQtSUQiLCJzZXNzaW9uX3N0YXRlIjoiYjgyYzYyOWMtZWNkMC00ZmVhLTgyNjktNTdlMWRjNGEzYmNjIiwic2lkIjoiYjgyYzYyOWMtZWNkMC00ZmVhLTgyNjktNTdlMWRjNGEzYmNjIiwic3RhdGVfY2hlY2tlciI6Il9jeWRxMjU1MWtLRW1JemUwU29BaDFFVC1CWncwZEFXVmJHSWFUOTFtcWMifQ.Hvum4jjz3GCBoCrfvYi-bzAY2kHZ0r5Lx2p0UF6ETp4g5EcIUzQDAvsJlzJGfhCX73K38jkLtiBMmzMd5ZRobA;Version=1;Path=/realms/stc-sso-dev/;Secure;HttpOnly;SameSite=None, KEYCLOAK_IDENTITY_LEGACY=eyJhbGciOiJIUzUxMiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICI0MzE2Nzg4Ny00YzdkLTQ5ZWUtOWMyZC0yOGI5OTBhZDU3ZWEifQ.eyJleHAiOjE3MzQ2MjEwOTYsImlhdCI6MTczNDYxOTI5NiwianRpIjoiNGY2NWQ5YzEtODBiZC00OGM0LTk4YTktYWIyZDI5NGVmYzZjIiwiaXNzIjoiaHR0cDovL2xvY2FsaG9zdDo4MDgwL3JlYWxtcy9zdGMtc3NvLWRldiIsInN1YiI6Ijk4MDI0MGJhLTQ2OGQtNGU1Yi04ZjFkLTgzMTk0NjYyMWEyMCIsInR5cCI6IlNlcmlhbGl6ZWQtSUQiLCJzZXNzaW9uX3N0YXRlIjoiYjgyYzYyOWMtZWNkMC00ZmVhLTgyNjktNTdlMWRjNGEzYmNjIiwic2lkIjoiYjgyYzYyOWMtZWNkMC00ZmVhLTgyNjktNTdlMWRjNGEzYmNjIiwic3RhdGVfY2hlY2tlciI6Il9jeWRxMjU1MWtLRW1JemUwU29BaDFFVC1CWncwZEFXVmJHSWFUOTFtcWMifQ.Hvum4jjz3GCBoCrfvYi-bzAY2kHZ0r5Lx2p0UF6ETp4g5EcIUzQDAvsJlzJGfhCX73K38jkLtiBMmzMd5ZRobA;Version=1;Path=/realms/stc-sso-dev/;HttpOnly, KEYCLOAK_SESSION="stc-sso-dev/980240ba-468d-4e5b-8f1d-831946621a20/b82c629c-ecd0-4fea-8269-57e1dc4a3bcc";Version=1;Path=/realms/stc-sso-dev/;Max-Age=1800;Secure;SameSite=None, KEYCLOAK_SESSION_LEGACY="stc-sso-dev/980240ba-468d-4e5b-8f1d-831946621a20/b82c629c-ecd0-4fea-8269-57e1dc4a3bcc";Version=1;Path=/realms/stc-sso-dev/;Max-Age=1800
+cache-control: no-store, must-revalidate, max-age=0
+content-length: 300
+connection: close
+content-type: application/json
+referrer-policy: no-referrer
+strict-transport-security: max-age=31536000; includeSubDomains
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+x-xss-protection: 1; mode=block
+###
+# @forceRef auth
+# @name token
+POST {{AUTH_SERVER}}/realms/{{REALM}}/protocol/openid-connect/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code&
+client_id={{client_id}}&
+client_secret={{client_secret}}&
+code={{auth.code}}&
+redirect_uri={{redirect_uri}}&
+code_verifier={{CODE_VERIFIER}}
+
+{{
+
+    const { equal }=require('assert');
+    test('status code 200', () => {
+      equal(response.statusCode, 200);
+  });
+}}
+
+HTTP/1.1 200  - OK
+cache-control: no-store
+pragma: no-cache
+content-length: 2951
+connection: close
+content-type: application/json
+referrer-policy: no-referrer
+strict-transport-security: max-age=31536000; includeSubDomains
+x-content-type-options: nosniff
+x-frame-options: SAMEORIGIN
+x-xss-protection: 1; mode=block
