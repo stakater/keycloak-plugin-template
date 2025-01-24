@@ -1,0 +1,20 @@
+# @import ./login.http
+# @forceRef token
+# @name logout
+POST {{AUTH_SERVER}}/realms/{{REALM}}/customoidc/logout
+Accept-Language: en
+Content-Type: application/json
+Authorization: Bearer {{token.access_token}}
+
+{
+    "device_id": "{{device_id}}",
+    "pushToken": "optional_push_token"
+}
+
+
+{{
+    const { equal }=require('assert');
+  test('status code 204', () => {
+    equal(response.statusCode, 204);
+  });
+}}

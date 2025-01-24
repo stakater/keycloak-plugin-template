@@ -1,0 +1,50 @@
+services:
+  keycloak:
+    container_name: keycloak
+    image: quay.io/keycloak/keycloak:26.1.0
+    command: start-dev --import-realm
+    ports:
+      - "8080:8080"
+      - "8787:8787" # debug port
+    expose:
+      - 8787 # debug port
+    volumes:
+      - ./imports:/opt/keycloak/data/import
+      - ../providers:/opt/keycloak/providers
+      #- keycloak_data:/opt/keycloak/data/
+
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      JAVA_OPTS_APPEND: "-agentlib:jdwp=transport=dt_socket,address=*:8787,server=y,suspend=n"
+      # KC_FEATURES: "transient-users,scripts"
+      
+      KC_HTTP_ENABLED: true
+      KC_DB: postgres
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak-password
+      KC_DB_URL: jdbc:postgresql://postgres/keycloak
+      KC_LOG_LEVEL: info
+
+      CONFIG_1: 1
+      CONFIG_2: "2"
+
+    links:
+      - postgres:postgres
+
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: keycloak
+      POSTGRES_DB: keycloak
+      POSTGRES_PASSWORD: keycloak-password
+    ports:
+      - 5432:5432
+    expose:
+      - 5432
+    volumes:
+      #- ./init-db:/docker-entrypoint-initdb.d // to create a db schema
+      - postgres_data:/var/lib/postgresql/data
+volumes:
+  postgres_data:
+  keycloak_data:
